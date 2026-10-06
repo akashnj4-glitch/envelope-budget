@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit Envelope</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        html, body { background-color: #222; min-height: 100vh; margin: 0; }
+        body { color: #fff; padding: 0; padding-bottom: 80px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #1a1a1a; border-bottom: 1px solid #333; }
+        .header a { color: #aaa; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+        .page-title { flex: 1; text-align: center; color: #fff; margin: 0; font-size: 1.2rem; font-weight: bold; }
+        .spacer { width: 70px; }
+        
+        .section-title { background-color: #1a1a1a; padding: 0.75rem 1rem; font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .form-row { display: flex; border-bottom: 1px solid #333; background: #2a2a2a; align-items: center; }
+        .form-row label { width: 35%; padding: 1rem; color: #64b5f6; font-weight: bold; margin: 0; font-size: 0.9rem; }
+        .form-row input { flex: 1; border: none; background: transparent; padding: 1rem; margin: 0; box-shadow: none; color: #fff; }
+        .form-row input:focus { outline: none; background: transparent; }
+        
+        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1a1a1a; padding: 1rem; border-top: 1px solid #333; }
+        .bottom-bar button { width: 100%; margin: 0; font-weight: bold; font-size: 1.1rem; border-radius: 6px; }
+
+        .error-box { background-color: #4a0000; border: 1px solid #ff5252; color: #ff8a80; padding: 1rem; margin: 1rem; border-radius: 8px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <form action="/envelope/{{ env.id }}/edit" method="POST">
+        <div class="header">
+            <a href="/">✕ Cancel</a>
+            <div class="page-title">Edit {{ env.name }}</div>
+            <div class="spacer"></div>
+        </div>
+
+        {% if error %}
+        <div class="error-box">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="section-title">Envelope Details</div>
+        
+        <div class="form-row">
+            <label>Name</label>
+            <input type="text" name="name" value="{{ env.name }}" required>
+        </div>
+        
+        <div class="form-row">
+            <label>Target Amount</label>
+            <input type="number" name="target" value="{{ env.target }}" step="0.01" required>
+        </div>
+
+        <div class="form-row">
+            <!-- Monthly target is still optional, no 'required' tag -->
+            <label>Monthly Target</label>
+            <input type="number" name="monthly_target" value="{{ env.monthly_target }}" step="0.01">
+        </div>
+
+        <div class="bottom-bar" style="display: flex; gap: 1rem;">
+            <button type="submit" style="flex: 2;">Save Changes</button>
+            <button type="button" onclick="document.getElementById('deleteModal').showModal()" style="flex: 1; background-color: #4a0000; border: 1px solid #ff5252; color: #ff8a80;">Delete</button>
+        </div>
+    </form>
+
+    <!-- Hidden form to handle the delete action -->
+    <form id="delete-form" action="/envelope/{{ env.id }}/delete" method="POST"></form>
+
+    <!-- Custom Delete Confirmation Modal -->
+    <dialog id="deleteModal">
+        
+        <!-- Inner div acts as the actual rectangular box in the center -->
+        <div style="background-color: #111; border: 1px solid #444; border-radius: 8px; padding: 2rem; width: 100%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); margin: auto;">
+            
+            <!-- Top Left Title -->
+            <div style="font-size: 1.1rem; color: #fff; margin-bottom: 2rem; text-align: Center; border-bottom: 1px solid #333; padding-bottom: 1rem;">
+                Delete Envelope
+            </div>
+
+            <!-- Center Content Space -->
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.8;">⚠️</div>
+                <p style="font-size: 1.1rem; color: #ccc; margin: 0 auto; line-height: 1.5;">
+                    Are you sure you want to delete the <strong>{{ env.name }}</strong> envelope?<br>
+                    All associated transactions will also be permanently deleted.
+                </p>
+            </div>
+
+            <!-- Bottom Buttons -->
+            <div style="display: flex; justify-content: center; gap: 1.5rem;">
+                <button type="button" onclick="document.getElementById('delete-form').submit()" style="background: transparent; border: 1px solid #ff5252; color: #ff5252; padding: 0.6rem 3rem; border-radius: 6px; font-size: 1rem; cursor: pointer; margin: 0; width: auto;">
+                    Delete
+                </button>
+                <button type="button" onclick="document.getElementById('deleteModal').close()" style="background: transparent; border: 1px solid #888; color: #ccc; padding: 0.6rem 3rem; border-radius: 6px; font-size: 1rem; cursor: pointer; margin: 0; width: auto;">
+                    Cancel
+                </button>
+            </div>
+            
+        </div>
+    </dialog>
+</body>
+</html>

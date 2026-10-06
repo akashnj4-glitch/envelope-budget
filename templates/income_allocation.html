@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Allocate Income</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        html, body { background-color: #222; min-height: 100vh; margin: 0; }
+        body { color: #fff; padding: 0; padding-bottom: 80px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #1a1a1a; border-bottom: 1px solid #333; }
+        .header a { color: #aaa; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+        .page-title { flex: 1; text-align: center; color: #fff; margin: 0; font-size: 1.2rem; font-weight: bold; }
+        .spacer { width: 70px; }
+        
+        /* Top Income Input Area */
+        .income-pool-card { background: #2a2a2a; padding: 1.5rem 1rem; text-align: center; border-bottom: 1px solid #444; }
+        
+        /* Shared styling for both labels */
+        .income-pool-card label, .remaining-label { 
+            display: block; 
+            color: #888; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            font-size: 0.85rem; 
+            letter-spacing: 1px; 
+            margin-bottom: 0.5rem; 
+        }
+        .remaining-label { margin-top: 1.5rem; }
+        
+        /* Shared sizing for both numbers */
+        .income-pool-card input { font-size: 2rem; font-weight: bold; text-align: center; border: none; background: transparent; color: #fff; box-shadow: none; padding: 0; height: auto; }
+        .income-pool-card input:focus { outline: none; background: transparent; }
+        .remaining-amount { font-size: 2rem; font-weight: bold; color: #81c784; }
+        .over-budget { color: #e57373 !important; }
+
+        .section-title { background-color: #1a1a1a; padding: 0.75rem 1rem; font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .form-row { display: flex; border-bottom: 1px solid #333; background: #2a2a2a; align-items: center; }
+        .form-row label { width: 50%; padding: 1rem; color: #fff; font-weight: bold; margin: 0; font-size: 0.9rem; }
+        .form-row input { flex: 1; border: none; background: transparent; padding: 1rem; margin: 0; box-shadow: none; color: #64b5f6; font-weight: bold; text-align: right; }
+        .form-row input:focus { outline: none; background: transparent; }
+        
+        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1a1a1a; padding: 1rem; border-top: 1px solid #333; }
+        .bottom-bar button { width: 100%; margin: 0; font-weight: bold; font-size: 1.1rem; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <form action="/income/allocate" method="POST">
+        
+        <div class="header">
+            <a href="/">✕ Cancel</a>
+            <div class="page-title">Fund Envelopes</div>
+            <div class="spacer"></div>
+        </div>
+
+        <!-- The Top Pool -->
+        <div class="income-pool-card">
+            <label>Total Income to Allocate</label>
+            <input type="number" id="totalIncome" placeholder="₹0" step="0.01" oninput="calculateRemaining()">
+            
+            <!-- Swapped the order and matched the text size -->
+            <div class="remaining-label">Remaining to Assign</div>
+            <div class="remaining-amount" id="remainingDisplay">₹0.00</div>
+        </div>
+
+        <div class="section-title">Your Envelopes</div>
+        
+        {% for env in envelopes %}
+        <div class="form-row">
+            <label>{{ env.name }} <br><span style="font-size: 0.7rem; color: #888; font-weight: normal;">Target: ₹{{ env.target }}</span></label>
+            <input type="number" name="alloc_{{ env.id }}" class="allocation-input" placeholder="₹0" step="0.01" oninput="calculateRemaining()">
+        </div>
+        {% endfor %}
+
+        <div class="bottom-bar">
+            <button type="submit">Allocate</button>
+        </div>
+
+    </form>
+
+    <script>
+        function calculateRemaining() {
+            const totalIncomeStr = document.getElementById('totalIncome').value;
+            const totalIncome = totalIncomeStr ? parseFloat(totalIncomeStr) : 0;
+            
+            let totalAllocated = 0;
+            document.querySelectorAll('.allocation-input').forEach(input => {
+                const val = parseFloat(input.value);
+                if (!isNaN(val) && val > 0) {
+                    totalAllocated += val;
+                }
+            });
+            
+            const remaining = totalIncome - totalAllocated;
+            const display = document.getElementById('remainingDisplay');
+            
+            display.innerText = '₹' + remaining.toFixed(2);
+            
+            if (remaining < 0) {
+                display.classList.add('over-budget');
+            } else {
+                display.classList.remove('over-budget');
+            }
+        }
+    </script>
+</body>
+</html>

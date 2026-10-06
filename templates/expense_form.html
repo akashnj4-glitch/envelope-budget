@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>New Expense</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        select option { background-color: #2a2a2a; color: #fff; }
+        html, body { background-color: #222; min-height: 100vh; margin: 0; }
+        body { color: #fff; padding: 0; padding-bottom: 80px; } /* Space for the bottom button */
+        
+        /* Top Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #1a1a1a; border-bottom: 1px solid #333; }
+        .header a { color: #aaa; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+        .page-title { flex: 1; text-align: center; color: #fff; margin: 0; font-size: 1.2rem; font-weight: bold; }
+        .spacer { width: 70px; } /* Keeps the title perfectly centered */
+        
+        /* Form Sections */
+        .section-title { background-color: #1a1a1a; padding: 0.75rem 1rem; font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .form-row { display: flex; border-bottom: 1px solid #333; background: #2a2a2a; align-items: center; }
+        .form-row label { width: 30%; padding: 1rem; color: #64b5f6; font-weight: bold; margin: 0; font-size: 0.9rem; }
+        .form-row input, .form-row select { flex: 1; border: none; background: transparent; padding: 1rem; margin: 0; box-shadow: none; color: #fff; }
+        .form-row input:focus, .form-row select:focus { outline: none; background: transparent; }
+        
+        /* Fixed Bottom Button */
+        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1a1a1a; padding: 1rem; border-top: 1px solid #333; }
+        .bottom-bar button { width: 100%; margin: 0; font-weight: bold; font-size: 1.1rem; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <form action="/api/transactions/web" method="POST">
+        
+        <div class="header">
+            <a href="/">✕ Cancel</a>
+            <div class="page-title">New Expense</div>
+            <div class="spacer"></div>
+        </div>
+
+        <div class="section-title">Transaction Details</div>
+        
+        <div class="form-row">
+            <label>Date</label>
+            <input type="text" value="03 Oct 2026" readonly>
+        </div>
+        
+        <div class="form-row">
+            <label>Envelope</label>
+            <!-- Changed to flex-direction row (by removing flex-direction: column) and added align-items: center -->
+            <div style="flex: 1; display: flex; align-items: center; padding: 0.5rem 1rem;">
+                
+                <!-- Added flex: 1 to the select so it pushes the balance text to the right -->
+                <select name="envelope_id" id="envelopeSelect" onchange="updateBalance()" required style="flex: 1; padding: 0.5rem 0; background: transparent; border: none; color: #fff; outline: none; box-shadow: none;">
+                    <option value="" data-balance="0" disabled selected>Not Selected</option>
+                    
+                    {% for env in envelopes %}
+                        <option value="{{ env.id }}" data-balance="{{ env.live_balance }}">{{ env.name }}</option>
+                    {% endfor %}
+                </select>
+                
+                <!-- Formatted to match your requested text with parentheses -->
+                <div id="balanceDisplay" style="font-size: 0.85rem; color: #aaa; display: none; white-space: nowrap; margin-left: 1rem;">
+                    (Remaining Balance= <strong id="balanceAmount">₹0.00</strong>)
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <label>Amount</label>
+            <input type="number" name="amount" placeholder="Amount" step="0.01" required>
+        </div>
+
+        <div class="section-title" style="margin-top: 1rem;">Additional Details</div>
+        
+        <div class="form-row">
+            <label>Note</label>
+            <input type="text" name="note" placeholder="No Note Entered">
+        </div>
+
+        <!-- Button moved to the bottom -->
+        <div class="bottom-bar">
+            <button type="submit">Done</button>
+        </div>
+
+    </form>
+    <script>
+        function updateBalance() {
+            const select = document.getElementById('envelopeSelect');
+            const display = document.getElementById('balanceDisplay');
+            const amountNode = document.getElementById('balanceAmount');
+            
+            const selectedOption = select.options[select.selectedIndex];
+            
+            // If the placeholder is selected, keep the text hidden
+            if (!selectedOption || !selectedOption.value) {
+                display.style.display = 'none';
+                return;
+            }
+            
+            // Retrieve the balance we injected into the selected option tag
+            const balance = parseFloat(selectedOption.getAttribute('data-balance'));
+            amountNode.innerText = '₹' + balance.toFixed(2);
+            
+            // Apply green for positive/zero, red for negative
+            if (balance >= 0) {
+                amountNode.style.color = '#81c784'; // Green
+            } else {
+                amountNode.style.color = '#e57373'; // Red
+            }
+            
+            // Make the text visible
+            display.style.display = 'block';
+        }
+        
+        // Run once on load just in case the browser pre-selects an option
+        document.addEventListener('DOMContentLoaded', updateBalance);
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>New Envelope</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        html, body { background-color: #222; min-height: 100vh; margin: 0; }
+        body { color: #fff; padding: 0; padding-bottom: 80px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #1a1a1a; border-bottom: 1px solid #333; }
+        .header a { color: #aaa; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+        .page-title { flex: 1; text-align: center; color: #fff; margin: 0; font-size: 1.2rem; font-weight: bold; }
+        .spacer { width: 70px; }
+        
+        .section-title { background-color: #1a1a1a; padding: 0.75rem 1rem; font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .form-row { display: flex; border-bottom: 1px solid #333; background: #2a2a2a; align-items: center; }
+        .form-row label { width: 35%; padding: 1rem; color: #64b5f6; font-weight: bold; margin: 0; font-size: 0.9rem; }
+        .form-row input, .form-row select { flex: 1; border: none; background: transparent; padding: 1rem; margin: 0; box-shadow: none; color: #fff; }
+        .form-row input:focus, .form-row select:focus { outline: none; background: transparent; }
+        
+        select option { background-color: #2a2a2a; color: #fff; }
+
+        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1a1a1a; padding: 1rem; border-top: 1px solid #333; }
+        .bottom-bar button { width: 100%; margin: 0; font-weight: bold; font-size: 1.1rem; border-radius: 6px; }
+
+    </style>
+</head>
+<body>
+    <form action="/envelope/new" method="POST">
+        <div class="header">
+            <a href="/">✕ Cancel</a>
+            <div class="page-title">New Envelope</div>
+            <div class="spacer"></div>
+        </div>
+
+        <!-- Styled Error Pop-up -->
+        {% if error %}
+        <!-- Custom Error Modal (Original Theme) -->
+        <dialog id="errorModal" style="background: transparent; border: none; padding: 0; margin: auto;">
+            <div style="background-color: #333; border: 1px solid #555; border-radius: 8px; padding: 2rem; width: 100%; min-width: 400px; max-width: 550px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); margin: auto;">
+                
+                <div style="font-size: 1.1rem; color: #fff; margin-bottom: 1.5rem; text-align: center; border-bottom: 1px dashed #555; padding-bottom: 1rem; font-weight: bold;">
+                    Notice
+                </div>
+
+                <div style="text-align: center; margin-bottom: 2.5rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem; color: #e57373;">⚠️</div>
+                    <p style="font-size: 1.05rem; color: #ccc; margin: 0 auto; line-height: 1.5;">
+                        {{ error }}
+                    </p>
+                </div>
+
+                <div style="display: flex; justify-content: center;">
+                    <button type="button" onclick="document.getElementById('errorModal').close()" style="width: 50%; background-color: #444; border: none; color: #fff; padding: 0.6rem; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; margin: 0;">
+                        Okay
+                    </button>
+                </div>
+            </div>
+        </dialog>
+
+        <!-- Script to trigger the modal immediately on page load -->
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('errorModal').showModal();
+            });
+        </script>
+        {% endif %}
+
+        <div class="section-title">Envelope Details</div>
+        
+        <div class="form-row">
+            <label>Name</label>
+            <input type="text" name="name" placeholder="e.g. Groceries" required>
+        </div>
+        
+        <div class="form-row">
+            <label>Category Type</label>
+            <select name="category_type" required>
+                <option value="Expense" {% if default_type == 'Expense' %}selected{% endif %}>Expense</option>
+                <option value="Goal" {% if default_type == 'Goal' %}selected{% endif %}>Goal</option>
+            </select>
+        </div>
+        
+        <div class="form-row">
+            <label>Target Amount</label>
+            <input type="number" name="target" placeholder="₹0.00" step="0.01" required>
+        </div>
+
+        <div class="form-row">
+            <label>Monthly Target</label>
+            <input type="number" name="monthly_target" placeholder="₹0.00" step="0.01">
+        </div>
+
+        <div class="bottom-bar">
+            <button type="submit">Save Envelope</button>
+        </div>
+    </form>
+</body>
+</html>
