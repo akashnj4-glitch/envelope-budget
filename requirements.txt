@@ -2,6 +2,7 @@ fastapi
 uvicorn
 sqlalchemy
 jinja2
-psycopg2-binary
 sqlmodel
 python-multipart
+psycopg[binary]
+psycopg2-binary
