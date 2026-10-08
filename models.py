@@ -17,6 +17,7 @@ class Envelope(SQLModel, table=True):
     target: float = Field(default=0.0)
     monthly_target: float = Field(default=0.0)  # NEW FIELD
     allocated: float = Field(default=0.0)
+    position: int = Field(default=0)
     
     transactions: list["Transaction"] = Relationship(back_populates="envelope")
 

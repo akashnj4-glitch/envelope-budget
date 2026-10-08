@@ -64,43 +64,47 @@
                 {% endif %}
 
                 <!-- Expense Envelopes List -->
-                {% for env in envelopes if env.type.value == 'Expense' and env.name != 'Buffer' %}
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <a href="/envelope/{{ env.id }}" style="color: inherit; text-decoration: none;"><strong>{{ env.name }}</strong></a>
-                        <span class="balance {% if env.live_balance >= env.target and env.target > 0 %}color-green{% else %}color-blue{% endif %}">
-                            ₹{{ env.live_balance }}
-                        </span>
+                <div id="expense-list">
+                    {% for env in envelopes if env.type.value == 'Expense' and env.name != 'Buffer' %}
+                    <div class="card" data-id="{{ env.id }}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <a href="/envelope/{{ env.id }}" style="color: inherit; text-decoration: none;"><strong>{{ env.name }}</strong></a>
+                            <span class="balance {% if env.live_balance >= env.target and env.target > 0 %}color-green{% else %}color-blue{% endif %}">
+                                ₹{{ env.live_balance }}
+                            </span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: #999; margin-top: 0.25rem;">
+                            Target: ₹{{ env.target }}
+                            {% if env.monthly_target > 0 %}
+                                | Monthly Target: ₹{{ env.monthly_target }}
+                            {% endif %}
+                        </div>
                     </div>
-                    <div style="font-size: 0.85rem; color: #999; margin-top: 0.25rem;">
-                        Target: ₹{{ env.target }}
-                        {% if env.monthly_target > 0 %}
-                            | Monthly Target: ₹{{ env.monthly_target }}
-                        {% endif %}
-                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
                 <a href="/envelope/new?type=Expense" role="button" class="outline" style="width: 100%; margin-top: 1rem; color: #aaa; border-color: #444; border-style: dashed; background: transparent;">+ Add Expense</a>
             </div>
 
             <div id="view-goals" class="hidden">
                 <!-- Goal Envelopes List -->
-                {% for env in envelopes if env.type.value == 'Goal' and env.name != 'Buffer' %}
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <a href="/envelope/{{ env.id }}" style="color: inherit; text-decoration: none;"><strong>{{ env.name }}</strong></a>
-                        <span class="balance {% if env.live_balance >= env.target and env.target > 0 %}color-green{% else %}color-blue{% endif %}">
-                            ₹{{ env.live_balance }}
-                        </span>
+                <div id="goal-list">
+                    {% for env in envelopes if env.type.value == 'Goal' and env.name != 'Buffer' %}
+                    <div class="card" data-id="{{ env.id }}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <a href="/envelope/{{ env.id }}" style="color: inherit; text-decoration: none;"><strong>{{ env.name }}</strong></a>
+                            <span class="balance {% if env.live_balance >= env.target and env.target > 0 %}color-green{% else %}color-blue{% endif %}">
+                                ₹{{ env.live_balance }}
+                            </span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: #999; margin-top: 0.25rem;">
+                            Target: ₹{{ env.target }}
+                            {% if env.monthly_target > 0 %}
+                                | Monthly Target: ₹{{ env.monthly_target }}
+                            {% endif %}
+                        </div>
                     </div>
-                    <div style="font-size: 0.85rem; color: #999; margin-top: 0.25rem;">
-                        Target: ₹{{ env.target }}
-                        {% if env.monthly_target > 0 %}
-                            | Monthly Target: ₹{{ env.monthly_target }}
-                        {% endif %}
-                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
                 <a href="/envelope/new?type=Goal" role="button" class="outline" style="width: 100%; margin-top: 1rem; color: #aaa; border-color: #444; border-style: dashed; background: transparent;">+ Add Goal</a>
             </div>
         </div>
@@ -235,5 +239,41 @@
             document.getElementById('deleteTxnModal').showModal();
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script>
+        // A reusable function to save the order whenever an item is dropped
+        function saveNewOrder(evt) {
+            const items = Array.from(evt.to.children);
+            const newOrder = items
+                .map(item => parseInt(item.dataset.id))
+                .filter(id => !isNaN(id));
+
+            fetch('/api/envelopes/reorder', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ envelope_ids: newOrder })
+            });
+        }
+
+        // Attach Sortable to the Expenses list
+        const expenseList = document.getElementById('expense-list');
+        if (expenseList) {
+            Sortable.create(expenseList, {
+                animation: 150,
+                onEnd: saveNewOrder
+            });
+        }
+
+        // Attach Sortable to the Goals list
+        const goalList = document.getElementById('goal-list');
+        if (goalList) {
+            Sortable.create(goalList, {
+                animation: 150,
+                onEnd: saveNewOrder
+            });
+        }
+    </script>
+    
+    
 </body>
 </html>

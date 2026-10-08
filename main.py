@@ -8,6 +8,8 @@ from database import create_db_and_tables, get_session
 from models import Envelope, Transaction, EnvelopeType
 import services
 from fastapi import HTTPException
+from pydantic import BaseModel
+from typing import List
 
 # This runs once when the server starts to create budget.db
 @asynccontextmanager
@@ -202,3 +204,19 @@ def delete_envelope_submit(
 ):
     services.delete_envelope(session, envelope_id)
     return RedirectResponse(url="/", status_code=303)
+
+# reordering the envelop list.
+
+class ReorderRequest(BaseModel):
+    envelope_ids: List[int]
+
+@app.put("/api/envelopes/reorder")
+def reorder_envelopes(request: ReorderRequest, session: Session = Depends(get_session)):
+    # Loop through the submitted IDs and update their position to match their new index
+    for index, env_id in enumerate(request.envelope_ids):
+        envelope = session.get(Envelope, env_id)
+        if envelope:
+            envelope.position = index
+    
+    session.commit()
+    return {"status": "success"}

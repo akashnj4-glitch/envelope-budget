@@ -33,7 +33,7 @@ def get_envelope_summary(session: Session, envelope_id: int) -> dict:
     }
 
 def get_all_summaries(session: Session) -> list[dict]:
-    envelopes = session.exec(select(Envelope)).all()
+    envelopes = session.exec(select(Envelope).order_by(Envelope.position)).all()
     summaries = [get_envelope_summary(session, env.id) for env in envelopes]
     
     # 1. Calculate total overspending (all negative balances in EXPENSE envelopes)
