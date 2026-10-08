@@ -255,11 +255,12 @@
             });
         }
 
-        // Attach Sortable to the Expenses list
         const expenseList = document.getElementById('expense-list');
         if (expenseList) {
             Sortable.create(expenseList, {
                 animation: 150,
+                delay: 300, // 300-millisecond long press before dragging starts
+                delayOnTouchOnly: true, // Only applies the delay to touch screens (phones)
                 onEnd: saveNewOrder
             });
         }
@@ -269,9 +270,12 @@
         if (goalList) {
             Sortable.create(goalList, {
                 animation: 150,
+                delay: 300, // 300-millisecond long press before dragging starts
+                delayOnTouchOnly: true, // Only applies the delay to touch screens (phones)
                 onEnd: saveNewOrder
             });
         }
+
     </script>
     
     
